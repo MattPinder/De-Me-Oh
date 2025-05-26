@@ -1,0 +1,26 @@
+.vs/
+Assets/Default*
+Assets/Samples*
+Assets/Settings*
+Assets/TextMesh Pro*
+Assets/VRTemplateAssets*
+Assets/XR*
+Library/
+Logs/
+obj/
+Packages/
+ProjectSettings/
+Temp/
+UserSettings/
+.vsconfig
+4_CloneWithATwist.sln
+Assembly-CSharp.csproj
+Unity.XR.*
+
+Assets/MyAssets.meta
+Assets/MyAssets/Animations*
+Assets/MyAssets/Materials*
+Assets/MyAssets/Prefabs*
+Assets/MyAssets/Scenes*
+Assets/MyAssets/Scripts.meta
+Assets/MyAssets/Scripts/*meta
