@@ -1,0 +1,11 @@
+# Additional assets used
+
+Free Cinematic Sound Effects
+Gregor Quendel
+Standard Unity Asset Store EULA (Extension Asset)
+https://assetstore.unity.com/packages/audio/sound-fx/free-cinematic-sound-effects-224972
+
+FREE Casual Game SFX Pack
+Dustyroom
+Standard Unity Asset Store EULA (Extension Asset)
+https://assetstore.unity.com/packages/audio/sound-fx/free-casual-game-sfx-pack-54116

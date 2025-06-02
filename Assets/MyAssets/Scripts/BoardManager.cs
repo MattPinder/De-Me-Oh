@@ -1,6 +1,8 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
+using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
@@ -12,40 +14,94 @@ public class BoardManager : MonoBehaviour
     // How many tiles to raise at a time?
     private int tilesToRaise = 20;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private string endTileName = "TileJ5";
+    private EndTileManager endTile;
+    private AudioSource boardAudio;
+
+    private int turnNumber = 0;
+
+    public bool gameOver {  get; private set; }
+
+    [Header("Key Settings")]
+    [Tooltip("Key prefab")]
+    public GameObject keyPrefab;
+    [Tooltip("List of possible key spawn locations")]
+    public List<Vector3> keySpawns;
+
+    [Header("UI Settings")]
+    [Tooltip("TextMeshPro object that displays the score")]
+    public TextMeshProUGUI scoreText;
+
+    [Header("Sound Settings")]
+    [Tooltip("Sound effect for walls moving")]
+    public AudioClip wallMoveSound;
+    [Tooltip("Sound effect for winning")]
+    public AudioClip victorySound;
+
     void Start()
     {
-        layerMask = LayerMask.GetMask("PlayerFigure");
+        gameOver = false;
+
+        scoreText.text = "Turns used\n0";
+
+        endTile = GameObject.Find(endTileName).GetComponent<EndTileManager>();
+        boardAudio = GetComponent<AudioSource>();
+
+        layerMask = LayerMask.GetMask("PlayerFigure", "Key");
         allTiles = GetComponentsInChildren<Animator>().ToList();
         raisedTiles = new List<Animator>();
 
+        SpawnKey();
+
         RaiseWalls();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void UpdateScore()
     {
-
+        turnNumber++;
+        scoreText.text = "Turns used\n" + turnNumber;
     }
 
-    public void LowerWalls()
+    private void SpawnKey()
     {
-        foreach (Animator raisedTile in raisedTiles)
+        int randomKeySpawn = Random.Range(0, keySpawns.Count);
+        Instantiate(keyPrefab, keySpawns[randomKeySpawn], keyPrefab.transform.rotation);
+    }
+
+    public IEnumerator LowerWalls()
+    {
+        yield return new WaitForSeconds(1.0f);
+
+        if (endTile.VictoryCheck())
         {
-            raisedTile.SetBool("Raised", false);
-
-            allTiles.Add(raisedTile);
+            boardAudio.PlayOneShot(victorySound);
+            gameOver = true;
+            scoreText.text = "Victory in\n" + turnNumber + " turns!";
+            Debug.Log("You win!");
         }
+        else
+        {
+            boardAudio.PlayOneShot(wallMoveSound);
 
-        // Clear raisedTiles AFTER iterating or else it errors out!
-        raisedTiles = new List<Animator>();
+            foreach (Animator raisedTile in raisedTiles)
+            {
+                raisedTile.SetBool("Raised", false);
 
-        RaiseWalls();
+                allTiles.Add(raisedTile);
+            }
+
+            // Clear raisedTiles AFTER iterating or else it errors out!
+            raisedTiles = new List<Animator>();
+
+            RaiseWalls();
+        }
     }
 
     private void RaiseWalls()
     {
         int raisedTileNumber = 0;
+
+        boardAudio.PlayOneShot(wallMoveSound);
 
         while (raisedTileNumber < tilesToRaise)
         {

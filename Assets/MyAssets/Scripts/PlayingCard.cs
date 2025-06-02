@@ -1,25 +1,30 @@
-using System.Collections;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-public class PlayingCard : MonoBehaviour
+public class PlayingCard : XRGrabInteractable
 {
-    private string cardName;
     private PlayerFigure playerFigure;
     private BoardManager boardManager;
     private Color cardColour;
 
-    // Check whether the enumeration types can be changed to set the values directly
-    public enum cardAction { turnLeft, turnRight, moveForward };
+    [Tooltip("Select the card's function")]
+    public enum cardAction { North, South, East, West, Wait };
     [SerializeField] private cardAction _cardAction;
 
-    // Describe the amount the card should rotate/move the player figure
-    private float figureRotation;
-    private int figureMovement;
+    [Tooltip("The card's starting socket")]
+    public XRSocketInteractor startSocket;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [Header("Card Slot")]
+    [Tooltip("The socket the cards are played to")]
+    public CardSlot cardSlot;
+
+    // Describe the amount the card should rotate/move the player figure
+    private Vector3 figureMovement;
+    private Quaternion figureRotation;
+
     void Start()
     {
-        cardName = gameObject.name;
         playerFigure = GameObject.Find("PlayerFigure").GetComponent<PlayerFigure>();
         boardManager = GameObject.Find("Board").GetComponent<BoardManager>();
         cardColour = gameObject.GetComponent<MeshRenderer>().material.color;
@@ -27,24 +32,27 @@ public class PlayingCard : MonoBehaviour
         SetCardBehaviour();
     }
 
-    public void ShowSelectedCard()
-    {
-        playerFigure.ChangeParticleColour(cardColour);
-        playerFigure.ParticleBurst();
-        PlayerMove();
 
-        StartCoroutine(RaiseWallsWithDelay());
+    public void ResetCard()
+    {
+        // Put the card back into its initial arm holster slot
+        cardSlot.gameObject.SetActive(false);
+
+        // Make the card disappear from the card slot, and return it to its initial arm socket
+        Vector3 moveToPosition = startSocket.gameObject.transform.position;
+        Quaternion rotateToPosition = startSocket.gameObject.transform.rotation;
+        gameObject.transform.SetPositionAndRotation(moveToPosition, rotateToPosition);
+
+        cardSlot.gameObject.SetActive(true);
     }
 
-    IEnumerator RaiseWallsWithDelay()
+    public void PlayCard()
     {
-        yield return new WaitForSeconds(1.0f);
-        boardManager.LowerWalls();
-    }
-
-    public void PlayCardAnimation()
-    {
-        // Play animations and sounds when the card is placed in the socket
+        if (!boardManager.gameOver)
+        {
+            PlayerMove();
+            ResetCard();
+        }
     }
 
     public void PlayerMove()
@@ -56,17 +64,25 @@ public class PlayingCard : MonoBehaviour
     {
         switch (_cardAction)
         {
-            case cardAction.turnLeft:
-                figureMovement = 1;
-                figureRotation = -90.0f;
+            case cardAction.North:
+                figureMovement = Vector3.forward;
+                figureRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
                 break;
-            case cardAction.turnRight:
-                figureMovement = 1;
-                figureRotation = 90.0f;
+            case cardAction.South:
+                figureMovement = Vector3.back;
+                figureRotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
                 break;
-            case cardAction.moveForward:
-                figureMovement = 1;
-                figureRotation = 0;
+            case cardAction.East:
+                figureMovement = Vector3.right;
+                figureRotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                break;
+            case cardAction.West:
+                figureMovement = Vector3.left;
+                figureRotation = Quaternion.Euler(0.0f, -90.0f, 0.0f);
+                break;
+            case cardAction.Wait:
+                figureMovement = Vector3.zero;
+                //figureRotation doesn't change
                 break;
             default:
                 break;
