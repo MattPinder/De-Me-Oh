@@ -1,13 +1,13 @@
 .vs/
 Assets/*meta
-Assets/Casual Game Sounds U6*
+Assets/CloneWithATwist_LightSettings.lighting
 Assets/Default*
-Assets/Gregor Quendel*
 Assets/Samples*
 Assets/Settings*
 Assets/TextMesh Pro*
 Assets/VRTemplateAssets*
 Assets/XR*
+Builds/*zip
 Library/
 Logs/
 obj/
@@ -15,6 +15,7 @@ Packages/
 ProjectSettings/
 Temp/
 UserSettings/
+.utmp/
 .vsconfig
 4_CloneWithATwist.sln
 Assembly-CSharp.csproj
@@ -22,8 +23,16 @@ Unity.XR.*
 
 Assets/MyAssets.meta
 Assets/MyAssets/Animations*
+Assets/MyAssets/BTM_Assets*
+Assets/MyAssets/Casual Game Sounds U6*
+Assets/MyAssets/FelineGargoyle*
+Assets/MyAssets/Gregor Quendel*
 Assets/MyAssets/Materials*
 Assets/MyAssets/Prefabs*
+Assets/MyAssets/Nature*
 Assets/MyAssets/Scenes*
 Assets/MyAssets/Scripts.meta
 Assets/MyAssets/Scripts/*meta
+Assets/MyAssets/Surreal-Skyboxes*
+Assets/MyAssets/Textures*
+Assets/MyAssets/YughuesFreeConcreteMaterials*

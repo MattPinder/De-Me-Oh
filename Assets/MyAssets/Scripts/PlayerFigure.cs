@@ -8,11 +8,11 @@ public class PlayerFigure : MonoBehaviour
     private AudioSource boardAudio;
 
     // Distance to move 
-    private float tileDistance = 0.141f;
+    private float tileDistance = 1.604f;
     private Vector3 targetPos;
     private Quaternion targetRotation = Quaternion.identity;
-    private float moveSpeed = 0.001f;
-    private float rotationSpeed = 1.25f;
+    private float moveSpeed = 0.02f;
+    private float rotationSpeed = 2.5f;
 
     private LayerMask layerMask;
 
@@ -23,8 +23,12 @@ public class PlayerFigure : MonoBehaviour
     public CardSlot cardSlot;
 
     [Header("Sound Settings")]
+    [Tooltip("Sound effect for the player figure moving")]
+    public AudioClip playerMove;
     [Tooltip("Sound effect for picking up a key")]
     public AudioClip keyPickupSound;
+    [Tooltip("Sound effect for attempting an illegal move")]
+    public AudioClip illegalMoveAudio;
 
     void Start()
     {
@@ -50,19 +54,26 @@ public class PlayerFigure : MonoBehaviour
     public void Move(Vector3 moveDirection, Quaternion rotateDirection)
     {
         Vector3 proposedTarget = transform.position + (moveDirection * tileDistance);
-        if (!CheckIllegalMove(moveDirection))
+
+        if (moveDirection == Vector3.zero)
+        {
+            // If Wait card is played, trigger LowerWalls() immediately
+            boardManager.UpdateScore();
+            StartCoroutine(cardSlot.ResetSocket());
+            StartCoroutine(boardManager.LowerWalls());
+        }
+        else if (!CheckIllegalMove(moveDirection))
         {
             targetPos = proposedTarget;
             targetRotation = rotateDirection;
+            boardAudio.PlayOneShot(playerMove);
             boardManager.UpdateScore();
-            StartCoroutine(boardManager.LowerWalls());
-
             StartCoroutine(cardSlot.ResetSocket());
         }
         else
         {
             // Reject the move with a visual/sound effect
-            Debug.Log("Illegal move!");
+            boardAudio.PlayOneShot(illegalMoveAudio);
         }
     }
 
@@ -79,8 +90,11 @@ public class PlayerFigure : MonoBehaviour
             boardAudio.PlayOneShot(keyPickupSound);
             burstParticles.Play();
             gotKey = true;
-            Debug.Log("Got key!");
             Destroy(other.gameObject);
+        }
+        if (other.CompareTag("Tile"))
+        {
+            StartCoroutine(boardManager.LowerWalls());
         }
     }
 

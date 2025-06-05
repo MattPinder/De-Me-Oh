@@ -32,7 +32,6 @@ public class PlayingCard : XRGrabInteractable
         SetCardBehaviour();
     }
 
-
     public void ResetCard()
     {
         // Put the card back into its initial arm holster slot

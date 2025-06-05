@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoardManager : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class BoardManager : MonoBehaviour
     // How many tiles to raise at a time?
     private int tilesToRaise = 20;
 
+    private PlayerFigure playerFigure;
     private string endTileName = "TileJ5";
     private EndTileManager endTile;
     private AudioSource boardAudio;
@@ -21,6 +23,7 @@ public class BoardManager : MonoBehaviour
     private int turnNumber = 0;
 
     public bool gameOver {  get; private set; }
+    public Button restartButton;
 
     [Header("Key Settings")]
     [Tooltip("Key prefab")]
@@ -42,10 +45,10 @@ public class BoardManager : MonoBehaviour
     {
         gameOver = false;
 
-        scoreText.text = "Turns used\n0";
-
         endTile = GameObject.Find(endTileName).GetComponent<EndTileManager>();
         boardAudio = GetComponent<AudioSource>();
+
+        playerFigure = GameObject.Find("PlayerFigure").GetComponent<PlayerFigure>();
 
         layerMask = LayerMask.GetMask("PlayerFigure", "Key");
         allTiles = GetComponentsInChildren<Animator>().ToList();
@@ -68,33 +71,32 @@ public class BoardManager : MonoBehaviour
         Instantiate(keyPrefab, keySpawns[randomKeySpawn], keyPrefab.transform.rotation);
     }
 
+    public void GameOver()
+    {
+        gameOver = true;
+        boardAudio.PlayOneShot(victorySound);
+        scoreText.text = "Victory in\n" + turnNumber + " turns!";
+        scoreText.alignment = TextAlignmentOptions.Top;
+        restartButton.gameObject.SetActive(true);
+    }
+
     public IEnumerator LowerWalls()
     {
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(0.5f);
 
-        if (endTile.VictoryCheck())
+        boardAudio.PlayOneShot(wallMoveSound);
+
+        foreach (Animator raisedTile in raisedTiles)
         {
-            boardAudio.PlayOneShot(victorySound);
-            gameOver = true;
-            scoreText.text = "Victory in\n" + turnNumber + " turns!";
-            Debug.Log("You win!");
+            raisedTile.SetBool("Raised", false);
+
+            allTiles.Add(raisedTile);
         }
-        else
-        {
-            boardAudio.PlayOneShot(wallMoveSound);
 
-            foreach (Animator raisedTile in raisedTiles)
-            {
-                raisedTile.SetBool("Raised", false);
+        // Clear raisedTiles AFTER iterating or else it errors out!
+        raisedTiles = new List<Animator>();
 
-                allTiles.Add(raisedTile);
-            }
-
-            // Clear raisedTiles AFTER iterating or else it errors out!
-            raisedTiles = new List<Animator>();
-
-            RaiseWalls();
-        }
+        RaiseWalls();
     }
 
     private void RaiseWalls()
@@ -109,7 +111,7 @@ public class BoardManager : MonoBehaviour
             Animator randomTile = allTiles[randomIndex];        // Access the relevant random tile's Animator
 
             // Only raise the tile if it doesn't have something on it
-            if (!Physics.Raycast(allTiles[randomIndex].transform.position, transform.up, 1, layerMask))
+            if (!Physics.Raycast(allTiles[randomIndex].transform.position, transform.up, 10, layerMask))
             {
                 randomTile.SetBool("Raised", true);
 
